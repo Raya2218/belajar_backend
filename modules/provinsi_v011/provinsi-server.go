@@ -1,4 +1,4 @@
-package provinsi_v010
+package provinsi_v011
 
 import (
 	"net/http"
@@ -32,12 +32,17 @@ func (s *provinsiServer) Init() {
 
 	provinsiControl := NewProvinsiController(s.database)
 
-	s.apiRoutes.GET("/"+s.version+"/provinsi", func(ctx *gin.Context) {
+	s.apiRoutes.GET("/"+s.version+"/provinsi", mid_auth.BasicAuth(), func(ctx *gin.Context) {
 		ctx.JSON(200, provinsiControl.FindAll())
 	})
 
-	s.apiRoutes.GET("/"+s.version+"/provinsi/all", func(ctx *gin.Context) {
-		ctx.JSON(200, provinsiControl.FindAll())
+	s.apiRoutes.GET("/"+s.version+"/provinsi/:id", mid_auth.BasicAuth(), func(ctx *gin.Context) {
+		result, err := provinsiControl.FindByID(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"data": nil, "error": err.Error()})
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{"data": result, "error": nil})
+		}
 	})
 
 	s.apiRoutes.POST("/"+s.version+"/provinsi", mid_auth.BasicAuth(), func(ctx *gin.Context) {
